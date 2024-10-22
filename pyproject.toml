@@ -1,10 +1,10 @@
 [project]
-name = "searchflow"
+name = "vectrix-graphs"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "Ben Selleslagh", email = "ben@dataframe.be" } 
+    { name = "Ben Selleslagh", email = "ben@vectrix.ai" } 
 ]
 requires-python = ">=3.11"
 dependencies = [

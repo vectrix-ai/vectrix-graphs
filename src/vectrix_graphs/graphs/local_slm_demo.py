@@ -1,10 +1,10 @@
 from typing import TypedDict, Literal
-from searchflow.graphs.utils.nodes import GraphNodes
-from searchflow.graphs.utils.state import OverallState
-from searchflow.db.vectordb import VectorDB
+from vectrix_graphs.graphs.utils.nodes import GraphNodes
+from vectrix_graphs.graphs.utils.state import OverallState
+from vectrix_graphs.db.vectordb import VectorDB
 from langgraph.graph import StateGraph, START, END
 import pathlib
-from searchflow.logger import setup_logger
+from vectrix_graphs.logger import setup_logger
 
 logger = setup_logger(name="LangGraph Flow")
 vectordb = VectorDB(setup_logger(name="VectorDB"))
@@ -13,7 +13,7 @@ vectordb = VectorDB(setup_logger(name="VectorDB"))
 class GraphConfig(TypedDict):
     internet_search: bool
 
-graph_nodes = GraphNodes(logger, vectordb, mode='online')
+graph_nodes = GraphNodes(logger, vectordb, mode="local")
 
 # Create a new workflow
 workflow = StateGraph(OverallState, config_schema=GraphConfig)
@@ -57,6 +57,6 @@ workflow.add_conditional_edges(
 workflow.add_edge("rewrite_question", "split_questions")
 workflow.add_edge("final_answer", END)
 
-default_flow = workflow.compile()
+local_slm_demo = workflow.compile()
 
-__all__ = ['default_flow']
+__all__ = ['local_slm_demo']
