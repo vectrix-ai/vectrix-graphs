@@ -1,0 +1,8 @@
+{
+    "dependencies": ["."],
+    "graphs": {
+      "default_flow": "./src/searchflow/graphs/default_llm_demo.py:default_llm_demo",
+      "local_slm_demo": "./src/searchflow/graphs/local_slm_demo.py:local_slm_demo"
+    },
+    "env": ".env"
+  }

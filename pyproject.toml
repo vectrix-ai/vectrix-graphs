@@ -1,0 +1,26 @@
+[project]
+name = "searchflow"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Ben Selleslagh", email = "ben@dataframe.be" } 
+]
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb>=0.5.15",
+    "colorlog>=6.8.2",
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.5",
+    "langchain-ollama>=0.2.0",
+    "langchain-openai>=0.2.3",
+    "langchain>=0.3.4",
+    "langgraph>=0.2.39",
+    "ollama>=0.3.3",
+    "python-dotenv>=1.0.1",
+    "unstructured[all-docs]>=0.16.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
