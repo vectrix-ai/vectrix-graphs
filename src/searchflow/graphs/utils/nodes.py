@@ -1,4 +1,5 @@
 from langchain_openai import ChatOpenAI
+from langchain_together import ChatTogether
 from langchain import hub
 from langchain_core.messages import BaseMessage, SystemMessage, AIMessage, HumanMessage
 from langchain_core.documents import Document
@@ -9,49 +10,70 @@ from langgraph.constants import Send
 from .state import OverallState, Intent, QuestionList, QuestionState, CitedSources
 
 class GraphNodes:
-    def __init__(self, logger, vector_db):
+    def __init__(self, logger, vector_db, mode='local'):
+        if mode not in ['local', 'online']:
+            raise ValueError("Mode must be either 'local' or 'online'")
         self.logger = logger
         self.logger.info("GraphNodes initialized")
         self.vectordb = vector_db
+        self.mode = mode
 
     @staticmethod
-    def _setup_intent_detection():
+    def _setup_intent_detection(mode):
         prompt = hub.pull("vectrix/intent_detection")
-        llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+        if mode == 'online':
+            llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+        else:
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", temperature=0)
         llm_with_tools = llm.bind_tools(tools=[Intent])
         return prompt | llm_with_tools
     
     @staticmethod
-    def _setup_question_detection():
+    def _setup_question_detection(mode):
         prompt = hub.pull("vectrix/split_questions")
-        llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+        if mode == 'online':
+            llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+        else:
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", temperature=0)
         llm_with_tools = llm.bind_tools(tools=[QuestionList])
         return prompt | llm_with_tools
     
     @staticmethod
-    def _rag_answer_chain():
-        llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+    def _rag_answer_chain(mode):
+        if mode == 'online':
+            llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+        else:
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
         prompt_template = hub.pull("answer_question")
         return prompt_template | llm | StrOutputParser()
     
     @staticmethod
-    def _setup_cite_sources_chain():
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    def _setup_cite_sources_chain(mode):
+        if mode == 'online':
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        else:
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
         llm_with_tools = llm.bind_tools([CitedSources])
         prompt = hub.pull("cite_sources")
         return prompt | llm_with_tools | PydanticToolsParser(tools=[CitedSources])
     
     @staticmethod
-    def _question_rewriter_chain():
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    def _question_rewriter_chain(mode):
+        if mode == 'online':
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        else:
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
         prompt = hub.pull("vectrix/question_rewriter")
         return prompt | llm | StrOutputParser()
     
 
     @staticmethod
-    def _setup_hallucination_grader():
+    def _setup_hallucination_grader(mode):
+        if mode == 'online':
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        else:
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", temperature=0)
         prompt = hub.pull("vectrix/hallucination_prompt")
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
         return prompt | llm
 
 
@@ -61,7 +83,7 @@ class GraphNodes:
         question = messages[-1].content
         # Select all messages except the last one
         chat_history = messages[:-1]
-        intent_detection = self._setup_intent_detection()
+        intent_detection = self._setup_intent_detection(self.mode)
         response = await intent_detection.ainvoke({"chat_history": chat_history, "question": question})
         self.logger.info(f"Intent detection response: {response['intent']}")
         return {"intent": response['intent']}
@@ -82,7 +104,7 @@ class GraphNodes:
         
     async def split_question_list(self,state: OverallState, config):
         self.logger.info("Splitting question list")
-        split_questions = self._setup_question_detection()
+        split_questions = self._setup_question_detection(self.mode)
         question = state['messages'][-1].content
         questions = await split_questions.ainvoke({"QUESTION": question})
         self.logger.info("Question was split into %s parts", len(questions))
@@ -91,7 +113,10 @@ class GraphNodes:
     async def llm_answer(self, state :OverallState, config):
         self.logger.info("Answering question with LLM")
         messages = state["messages"]
-        llm = ChatOpenAI(temperature=0, model="gpt-4o-mini")
+        if self.mode == 'online':
+            llm = ChatOpenAI(temperature=0, model="gpt-4o")
+        else:
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
         response = await llm.ainvoke(messages)
         response = AIMessage(content=response.content)
         return {"messages": response}
@@ -136,7 +161,7 @@ class GraphNodes:
         for i, doc in enumerate(state["documents"], 1):
             sources += f"{i}. {doc.page_content}\n\n"
 
-        final_answer_chain = self._rag_answer_chain()
+        final_answer_chain = self._rag_answer_chain(self.mode)
 
         response = await final_answer_chain.ainvoke({"SOURCES": sources, "QUESTION": question})
         response = AIMessage(content=response)
@@ -147,7 +172,7 @@ class GraphNodes:
         self.logger.info("Grading hallucination")
         answer = state["temporary_answer"]
         documents = state["documents"]
-        hallucination_grader = self._setup_hallucination_grader()
+        hallucination_grader = self._setup_hallucination_grader(self.mode)
         response = await hallucination_grader.ainvoke({"documents": documents, "generation": answer})
         grade = response["binary_score"]
         return {"hallucination_grade": grade}
@@ -164,7 +189,7 @@ class GraphNodes:
         
 
     async def rewrite_question(self, state: OverallState, config):
-        question_rewriter = self._setup_question_rewriter_chain()
+        question_rewriter = self._setup_question_rewriter_chain(self.mode)
         question = state["messages"][-1].content
         rewritten_question = await question_rewriter.ainvoke({"question": question})
         return {"messages": rewritten_question}
@@ -184,7 +209,7 @@ class GraphNodes:
             url = doc.metadata.get('url', 'No URL provided')
             sources += f"{i}. {doc.page_content}\n\nURL: {url}\nSOURCE: {source}\n"
 
-        cite_sources_chain = self._setup_cite_sources_chain()
+        cite_sources_chain = self._setup_cite_sources_chain(self.mode)
 
         response = await cite_sources_chain.ainvoke({"SOURCES": sources, "QUESTION": question})
 

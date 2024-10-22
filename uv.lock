@@ -1468,6 +1468,21 @@ wheels = [
 ]
 
 [[package]]
+name = "langchain-together"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "langchain-core" },
+    { name = "langchain-openai" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f2/d3/f1e3307e571c19407053648e98f1a3e51e1916c3ee8db4d424ba05d0f33e/langchain_together-0.2.0.tar.gz", hash = "sha256:39656451179e9c10dffa3a84642855d3ca23f7c01848953765adc30b08d276cc", size = 10252 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/53/50/48c47e72a2b2e87d943d090f7693744ebb0ffe983962571da08cace3d5be/langchain_together-0.2.0-py3-none-any.whl", hash = "sha256:6ed3c20804d9d437bacfb5b494a85c0a8aca0eca223cc2575b5d368420ca2c9f", size = 12308 },
+]
+
+[[package]]
 name = "langdetect"
 version = "1.0.9"
 source = { registry = "https://pypi.org/simple" }
@@ -3465,6 +3480,7 @@ dependencies = [
     { name = "langchain" },
     { name = "langchain-ollama" },
     { name = "langchain-openai" },
+    { name = "langchain-together" },
     { name = "langgraph" },
     { name = "ollama" },
     { name = "python-dotenv" },
@@ -3480,6 +3496,7 @@ requires-dist = [
     { name = "langchain", specifier = ">=0.3.4" },
     { name = "langchain-ollama", specifier = ">=0.2.0" },
     { name = "langchain-openai", specifier = ">=0.2.3" },
+    { name = "langchain-together", specifier = ">=0.2.0" },
     { name = "langgraph", specifier = ">=0.2.39" },
     { name = "ollama", specifier = ">=0.3.3" },
     { name = "python-dotenv", specifier = ">=1.0.1" },

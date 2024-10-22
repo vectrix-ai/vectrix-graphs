@@ -2,6 +2,7 @@ from typing import Literal, Optional, List
 from datetime import datetime
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
+from langchain_together import ChatTogether
 from langchain import hub
 from langchain_core.documents import Document
 from pydantic import BaseModel, Field
@@ -31,8 +32,10 @@ class ExtractMetaData:
         self.model = model
         if model == "gpt-4o-mini":
             self.llm_with_tools = ChatOpenAI(model=model, temperature=0)
-        elif model == "llama3.1":
-            self.llm_with_tools = ChatOllama(model=model, temperature=0)
+        elif model == "llama3.1-8B":
+            self.llm_with_tools = ChatOllama(model="llama3.1", temperature=0)
+        elif model == "llama3.1-70B":
+            self.llm_with_tools = ChatTogether(model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", temperature=0)
         else:
             raise ValueError(f"Model {self.model} not supported")
         self.prompt = hub.pull("entity_extraction")

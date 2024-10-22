@@ -13,7 +13,7 @@ vectordb = VectorDB(setup_logger(name="VectorDB"))
 class GraphConfig(TypedDict):
     internet_search: bool
 
-graph_nodes = GraphNodes(logger, vectordb)
+graph_nodes = GraphNodes(logger, vectordb, mode='online')
 
 # Create a new workflow
 workflow = StateGraph(OverallState, config_schema=GraphConfig)
@@ -57,6 +57,6 @@ workflow.add_conditional_edges(
 workflow.add_edge("rewrite_question", "split_questions")
 workflow.add_edge("final_answer", END)
 
-default_llm_demo = workflow.compile()
+default_flow = workflow.compile()
 
-__all__ = ['default_llm_demo']
+__all__ = ['default_flow']
