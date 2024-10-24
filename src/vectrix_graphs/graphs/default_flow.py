@@ -13,7 +13,7 @@ vectordb = VectorDB(setup_logger(name="VectorDB"))
 class GraphConfig(TypedDict):
     internet_search: bool
 
-graph_nodes = GraphNodes(logger, vectordb, mode='online')
+graph_nodes = GraphNodes(logger, vectordb, mode="online")
 
 # Create a new workflow
 workflow = StateGraph(OverallState, config_schema=GraphConfig)

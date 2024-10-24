@@ -71,8 +71,9 @@ class VectorDB():
         )
 
         documents = []
-        for content, metadata, distance in zip(results['documents'][0], results['metadatas'][0], results['distances'][0]):
+        for content, metadata, distance, id in zip(results['documents'][0], results['metadatas'][0], results['distances'][0], results['ids'][0]):
             metadata['cosine_distance'] = distance
+            metadata['uuid'] = id
             doc = Document(page_content=content, metadata=metadata)
             documents.append(doc)
 

@@ -2,7 +2,7 @@
 
 SearchFlow is an advanced document processing and question-answering system that leverages natural language processing and vector databases to provide intelligent responses to user queries.
 
-## Features
+## Featuress
 
 - Document extraction and processing
 - Named Entity Recognition (NER) for metadata extraction

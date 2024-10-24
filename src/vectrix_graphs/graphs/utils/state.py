@@ -43,3 +43,8 @@ class OverallState(TypedDict):
     documents: Annotated[List[Document], operator.add]
     cited_sources: List[CitedSources]
     hallucination_grade: bool
+
+class SubgraphState(TypedDict):
+    answer: str
+    question: str
+    documents: Annotated[List[Document], operator.add]

@@ -1,13 +1,14 @@
 from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain_together import ChatTogether
 from langchain import hub
 from langchain_core.messages import BaseMessage, SystemMessage, AIMessage, HumanMessage
 from langchain_core.documents import Document
-from langchain_core.output_parsers import PydanticToolsParser, JsonOutputParser, StrOutputParser
+from langchain_core.output_parsers import PydanticToolsParser, JsonOutputParser, StrOutputParser, XMLOutputParser
 from langgraph.constants import Send
+from typing import List
 
-
-from .state import OverallState, Intent, QuestionList, QuestionState, CitedSources
+from .state import OverallState, SubgraphState, Intent, QuestionList, QuestionState, CitedSources
 
 class GraphNodes:
     def __init__(self, logger, vector_db, mode='local'):
@@ -34,18 +35,19 @@ class GraphNodes:
         if mode == 'online':
             llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
         else:
-            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", temperature=0)
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
         llm_with_tools = llm.bind_tools(tools=[QuestionList])
         return prompt | llm_with_tools
     
     @staticmethod
     def _rag_answer_chain(mode):
         if mode == 'online':
-            llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+            llm = ChatAnthropic(model_name="claude-3-5-sonnet-20241022", temperature=0)
         else:
             llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
         prompt_template = hub.pull("answer_question")
-        return prompt_template | llm | StrOutputParser()
+        parser = XMLOutputParser()
+        return prompt_template | llm | StrOutputParser() | parser
     
     @staticmethod
     def _setup_cite_sources_chain(mode):
@@ -75,6 +77,17 @@ class GraphNodes:
             llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", temperature=0)
         prompt = hub.pull("vectrix/hallucination_prompt")
         return prompt | llm
+    
+    @staticmethod
+    def _filter_duplicate_docs(documents : List[Document]) -> List[Document]:
+        seen_uuids = set()
+        unique_documents = []
+        for doc in documents:
+            uuid = doc.metadata.get('uuid')
+            if uuid not in seen_uuids:
+                seen_uuids.add(uuid)
+                unique_documents.append(doc)
+        return unique_documents
 
 
     async def detect_intent(self, state :OverallState, config):
@@ -126,10 +139,9 @@ class GraphNodes:
         We will perform a vector search for all question and return the top documents for eacht question
         """
         # Initiate the documents list
-        self.logger.info("Retrieving documents, for the following questions: %s", state["question_list"]['questions'])
+        self.logger.info("Answering the following questions: %s", state["question_list"]['questions'])
         return [Send("retrieve", {"question": q}) for q in state["question_list"]['questions']]
-    
-
+   
     async def retrieve(self, state: QuestionState, config):
         '''
         Retrieve documents relevant to the question
@@ -151,6 +163,16 @@ class GraphNodes:
 
         return {"documents": filtered_documents}
     
+    async def filter_docs(self, state: OverallState, config):
+        documents = state["documents"]
+        if len(documents) == 0:
+            return {"documents": []}
+        
+        filtered_docs = self._filter_duplicate_docs(documents)
+
+        state['documents'].clear()
+        return {"documents": filtered_docs}
+    
 
 
     async def rag_answer(self, state: OverallState, config):
@@ -167,6 +189,10 @@ class GraphNodes:
         response = AIMessage(content=response)
 
         return {"temporary_answer": response}
+    
+    async def final_answer(self, state: OverallState, config):
+        self.logger.info("Final answer: %s", state["temporary_answer"])
+        return {"messages": state["temporary_answer"]}
     
     async def hallucination_grader(self, state: OverallState, config):
         self.logger.info("Grading hallucination")
@@ -218,6 +244,14 @@ class GraphNodes:
     async def final_answer(self,state: OverallState, config):
         final_answer = state["temporary_answer"]
         return {"messages": final_answer}
+    
+    async def metadata_query(self, state: OverallState, config):
+        self.logger.info("Answering metadata query")
+        return {}
+    
+    async def default_flow_end(self, state: OverallState, config):
+        self.logger.info("Default flow end")
+        return {}
     
 
 
