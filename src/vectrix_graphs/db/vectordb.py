@@ -24,6 +24,9 @@ class VectorDB():
             self.logger.warning(f"Demo collection already exists")
             self.collection = self.client.get_collection(name="demo")
 
+    def create_collection(self, name: str):
+        self.collection = self.client.create_collection(name=name)
+        self.logger.info(f"{name} collection created")
 
     def add_documents(self, documents: List[Document]):
         '''
@@ -78,3 +81,7 @@ class VectorDB():
             documents.append(doc)
 
         return documents
+    
+    def remove_collection(self, name: str):
+        self.client.delete_collection(name=name)
+        self.logger.info(f"{name} collection deleted")

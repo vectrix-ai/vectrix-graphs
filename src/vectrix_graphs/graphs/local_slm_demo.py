@@ -1,19 +1,18 @@
 from typing import TypedDict, Literal
 from vectrix_graphs.graphs.utils.nodes import GraphNodes
 from vectrix_graphs.graphs.utils.state import OverallState
-from vectrix_graphs.db.vectordb import VectorDB
+from vectrix_graphs import vectordb
 from langgraph.graph import StateGraph, START, END
 import pathlib
 from vectrix_graphs.logger import setup_logger
 
 logger = setup_logger(name="LangGraph Flow")
-vectordb = VectorDB(setup_logger(name="VectorDB"))
 
 # Define the config
 class GraphConfig(TypedDict):
     internet_search: bool
 
-graph_nodes = GraphNodes(logger, vectordb, mode="online")
+graph_nodes = GraphNodes(logger, vectordb, mode="local")
 
 subgraph = StateGraph(OverallState, config_schema=GraphConfig)
 
@@ -24,16 +23,14 @@ subgraph.add_node("filter_docs", graph_nodes.filter_docs)
 subgraph.add_node("hallucination_grader", graph_nodes.hallucination_grader)
 subgraph.add_node("final_answer", graph_nodes.final_answer)
 subgraph.add_node("rewrite_question", graph_nodes.rewrite_question)
-subgraph.add_node("cite_sources", graph_nodes.cite_sources)
 
 subgraph.add_edge(START, "split_questions")
 subgraph.add_conditional_edges("split_questions", graph_nodes.retrieve_documents, ["retrieve"])
 subgraph.add_edge("retrieve", "filter_docs")
 subgraph.add_edge("filter_docs", "rag_answer")
 subgraph.add_edge("rag_answer", "hallucination_grader")
-subgraph.add_conditional_edges("hallucination_grader", graph_nodes.grade, {"no_hallucinations": "cite_sources", "hallucinations": "rewrite_question"})
+subgraph.add_conditional_edges("hallucination_grader", graph_nodes.grade, {"no_hallucinations": "final_answer", "hallucinations": "rewrite_question"})
 subgraph.add_edge("rewrite_question", "split_questions")
-subgraph.add_edge("cite_sources", "final_answer")
 subgraph.add_edge("final_answer", END)
 
 subgraph = subgraph.compile()

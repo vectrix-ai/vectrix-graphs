@@ -8,19 +8,6 @@ from langchain_core.documents import Document
 from pydantic import BaseModel, Field
 from pytz import UTC
 
-
-class ExtractionObject(BaseModel):
-    title: str
-    content: str
-    url: str
-    project_name: str
-    file_type: Literal["webpage", "pdf", "docx", "txt", "csv", "other"]
-    source: Literal["webpage", "uploaded_file", "OneDrive", "Notion", "chrome_extension"]
-    filename: Optional[str] = ""
-    creation_date: Optional[datetime] = None
-    last_modified_date: Optional[datetime] = None
-    
-
 class ExtractMetaData:
     '''
     This class is used to extract information from a document.
@@ -48,29 +35,45 @@ class ExtractMetaData:
     @staticmethod
     def _calculate_read_time(word_count: int) -> float:
         return word_count / 200
+    
+    @staticmethod
+    def _format_last_modified(last_modified):
+        if not last_modified:
+            return ""
+        if isinstance(last_modified, str):
+            return last_modified
+        try:
+            return last_modified.replace(tzinfo=UTC).isoformat()
+        except AttributeError:
+            return str(last_modified)
 
-    def extract(self, documents: List[ExtractionObject], source: Literal["webpage", "uploaded_file", "OneDrive", "Notion", "chrome_extension"]) -> List[Document]:
+    def extract(self, documents: List[Document], source: Literal["webpage", "uploaded_file", "OneDrive", "Notion", "chrome_extension"]) -> List[Document]:
         self.logger.info(f"Extracting metadata from {len(documents)} documents, using {self.model}")
-        chain = self.prompt | self.llm_with_tools
-        content_list = [{"content" : doc.page_content} for doc in documents]
-        responses =  chain.batch(content_list)
+        ner_chain = self.prompt | self.llm_with_tools
+        content_list = [{"content": doc.page_content} for doc in documents]
+        
+        try:
+            responses = ner_chain.batch(content_list)
+        except Exception as e:
+            self.logger.error(f"Error during batch processing: {str(e)}")
+            responses = [None] * len(documents)
 
         results = []
 
         # Merge the responses with the documents
         for doc, response in zip(documents, responses):
             doc_metadata = {
-                "filename": doc.metadata.get("filename", ""),
-                "filetype": doc.metadata.get("filetype", ""),
-                "author": response.get("author") or "",
+                "filename": doc.metadata['filename'],
+                "filetype": doc.metadata['filetype'],
+                "author": response.get("author", "") if response else "",
                 "source": source,
                 "word_count": self._calculate_word_count(doc.page_content),
-                "language": response.get("language") or "",
-                "content_type": response.get("content_type") or "",
-                "tags": str(response.get("tags") or ""),
-                "summary": response.get("summary") or "",
+                "language": response.get("language", "") if response else "",
+                "content_type": response.get("content_type", "") if response else "",
+                "tags": str(response.get("tags", "")) if response else "",
+                "summary": response.get("summary", "") if response else "",
                 "read_time": self._calculate_read_time(self._calculate_word_count(doc.page_content)),
-                "last_modified": doc.metadata.get("last_modified", ""),
+                "last_modified": self._format_last_modified(doc.metadata['last_modified']),
             }
             results.append(Document(
                 page_content=doc.page_content,

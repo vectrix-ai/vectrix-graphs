@@ -55,10 +55,12 @@ class StreamProcessor:
         async for event in self.graph.astream_events({"messages": messages}, version="v1", config=config):
             kind = event["event"]
 
+            #print(event)
+
             if kind == "on_chat_model_stream":
-                if event["metadata"]["langgraph_node"] in ["llm_answer", "rag_answer", "rewrite_last_message"]:
+                if event["metadata"]["langgraph_node"] in ["llm_answer", "final_answer", 'rag_answer', "rewrite_last_message"]:
                     chunk_content = event["data"]["chunk"].content
-                    print(chunk_content, end='', flush=True)  # Print on the same line and flush the output
+                    #print(chunk_content, end='', flush=True)  # Print on the same line and flush the output
 
                     # OpenAI API format
                     '''
@@ -76,19 +78,7 @@ class StreamProcessor:
                         }]
                     }
                     '''
-
-        # After the loop, send the final chunk
-        yield '\n'
-        yield {
-            "id": event["run_id"],
-            "object": "chat.completion.chunk",
-            "created": int(time.time()),
-            "model": "SearchFlow Custom Graph Model",
-            "system_fingerprint": "fp_" + event["run_id"][:8],
-            "choices": [{
-                "index": 0,
-                "delta": {},
-                "logprobs": None,
-                "finish_reason": "stop"
-            }]
-        }
+            if kind == "on_chain_stream":
+                if event['name'] == 'final_answer':
+                    yield(event['data']['chunk']['messages'].content)
+                    pass

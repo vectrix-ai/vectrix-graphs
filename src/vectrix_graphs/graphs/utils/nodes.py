@@ -42,12 +42,14 @@ class GraphNodes:
     @staticmethod
     def _rag_answer_chain(mode):
         if mode == 'online':
-            llm = ChatAnthropic(model_name="claude-3-5-sonnet-20241022", temperature=0)
+            prompt_template = hub.pull("answer_question")
+            llm = ChatAnthropic(model_name="claude-3-5-sonnet-20241022", temperature=0, max_tokens=6000)
+            return prompt_template | llm
         else:
+            prompt_template = hub.pull("vectrix/answer_question_local")
             llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
-        prompt_template = hub.pull("answer_question")
-        parser = XMLOutputParser()
-        return prompt_template | llm | StrOutputParser() | parser
+            return prompt_template | llm | XMLOutputParser(tags=["answer"])
+        
     
     @staticmethod
     def _setup_cite_sources_chain(mode):
@@ -159,9 +161,9 @@ class GraphNodes:
             k=3
         )
         # Filter all documents with a cosine distance smaller than 0.45
-        filtered_documents = [doc for doc in results if doc.metadata['cosine_distance'] < 0.45]
+        #filtered_documents = [doc for doc in results if doc.metadata['cosine_distance'] < 0.8]
 
-        return {"documents": filtered_documents}
+        return {"documents": results}
     
     async def filter_docs(self, state: OverallState, config):
         documents = state["documents"]
@@ -184,11 +186,18 @@ class GraphNodes:
             sources += f"{i}. {doc.page_content}\n\n"
 
         final_answer_chain = self._rag_answer_chain(self.mode)
-
         response = await final_answer_chain.ainvoke({"SOURCES": sources, "QUESTION": question})
-        response = AIMessage(content=response)
 
-        return {"temporary_answer": response}
+        if self.mode == 'online':
+            # Extract the content from the 'answer_markdown' key
+            answer_content = response['answer']
+        else:
+            answer_content = response['answer']
+
+        # Create the AIMessage with the extracted content
+        ai_message = AIMessage(content=answer_content)
+
+        return {"temporary_answer": ai_message}
     
     async def final_answer(self, state: OverallState, config):
         self.logger.info("Final answer: %s", state["temporary_answer"])
@@ -258,5 +267,6 @@ class GraphNodes:
 
 
         
+
 
 
