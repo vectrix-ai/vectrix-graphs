@@ -32,3 +32,6 @@ Thumbs.db
 # Vector database
 vector_db/
 
+# Ruff cache
+.ruff_cache/
+
