@@ -4,14 +4,13 @@ from ollama import Client
 from langchain_core.documents import Document
 from typing import List
 import uuid
-import pathlib
 
 class VectorDB():
     def __init__(self, logger, embeddings_model = None):
         self.logger = logger
         try:
             self.client = chromadb.HttpClient(host='localhost', port=8000)
-        except Exception as e:
+        except Exception:
             self.logger.warning("Connecting to ChromaDB on localhost failed, using Docker networking instead")
             self.client = chromadb.HttpClient(host='host.docker.internal', port=8000)
         try: 
@@ -20,8 +19,8 @@ class VectorDB():
                 metadata={"hnsw:space": "cosine"} # Instead of the default squared L2 distance
                 )
             self.logger.info("Demo collection created")
-        except Exception as e:
-            self.logger.warning(f"Demo collection already exists")
+        except Exception:
+            self.logger.warning("Demo collection already exists")
             self.collection = self.client.get_collection(name="demo")
 
     def create_collection(self, name: str):
@@ -58,7 +57,7 @@ class VectorDB():
                 model="bge-m3",
                 prompt=query
             )
-        except Exception as e:
+        except Exception:
             self.logger.warning("Connecting to Ollama on localhost failed, using Docker networking instead")
             client = Client(host="host.docker.internal")
             embeddings = client.embeddings(

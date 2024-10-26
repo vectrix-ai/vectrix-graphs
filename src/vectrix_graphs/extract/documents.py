@@ -1,6 +1,5 @@
 from unstructured.partition.auto import partition
 from langchain_core.documents import Document
-import os
 from typing import List
 
 class ExtractDocuments():

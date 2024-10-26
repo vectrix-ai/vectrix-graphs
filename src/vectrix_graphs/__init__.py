@@ -1,7 +1,7 @@
 from .extract.documents import ExtractDocuments
 from .logger import setup_logger
 from .extract.ner import ExtractMetaData
-from vectrix_graphs.db.vectordb import VectorDB
+from .db.vectordb import VectorDB
 
 # Initialize the VectorDB object
 vectordb = VectorDB(setup_logger(name="VectorDB"))

@@ -2,13 +2,13 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_together import ChatTogether
 from langchain import hub
-from langchain_core.messages import BaseMessage, SystemMessage, AIMessage, HumanMessage
+from langchain_core.messages import AIMessage
 from langchain_core.documents import Document
-from langchain_core.output_parsers import PydanticToolsParser, JsonOutputParser, StrOutputParser, XMLOutputParser
+from langchain_core.output_parsers import PydanticToolsParser, StrOutputParser, XMLOutputParser
 from langgraph.constants import Send
 from typing import List
 
-from .state import OverallState, SubgraphState, Intent, QuestionList, QuestionState, CitedSources
+from .state import OverallState, Intent, QuestionList, QuestionState, CitedSources
 
 class GraphNodes:
     def __init__(self, logger, vector_db, mode='local'):
@@ -249,10 +249,6 @@ class GraphNodes:
         response = await cite_sources_chain.ainvoke({"SOURCES": sources, "QUESTION": question})
 
         return {"cited_sources": response}
-    
-    async def final_answer(self,state: OverallState, config):
-        final_answer = state["temporary_answer"]
-        return {"messages": final_answer}
     
     async def metadata_query(self, state: OverallState, config):
         self.logger.info("Answering metadata query")

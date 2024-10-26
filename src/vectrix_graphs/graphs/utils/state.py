@@ -1,9 +1,9 @@
-from typing import List, Annotated, Sequence, Literal, Optional
+from typing import List, Annotated, Sequence, Literal
 from typing_extensions import TypedDict
 from pydantic import Field, BaseModel
 import operator
 from enum import Enum
-from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.messages import BaseMessage
 from langchain_core.documents import Document
 from langgraph.graph.message import add_messages
 

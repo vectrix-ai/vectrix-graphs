@@ -1,5 +1,4 @@
 from langsmith import Client
-import time
 
 
 class StreamProcessor:
@@ -44,10 +43,6 @@ class StreamProcessor:
             This method uses the LangSmith Client to retrieve the final run URL.
         """
 
-        run_id = ""
-        client  = Client()
-        current_langgraph_node = []
-
         config = {"configurable": {
         }}
 
@@ -59,7 +54,7 @@ class StreamProcessor:
 
             if kind == "on_chat_model_stream":
                 if event["metadata"]["langgraph_node"] in ["llm_answer", "final_answer", 'rag_answer', "rewrite_last_message"]:
-                    chunk_content = event["data"]["chunk"].content
+                    #chunk_content = event["data"]["chunk"].content
                     #print(chunk_content, end='', flush=True)  # Print on the same line and flush the output
 
                     # OpenAI API format

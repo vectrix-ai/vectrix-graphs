@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = [
     "chromadb>=0.5.15",
     "colorlog>=6.8.2",
-    "fastapi>=0.115.3",
+    "fastapi[standard]>=0.115.3",
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.5",
     "jupyter>=1.1.1",
@@ -22,8 +22,13 @@ dependencies = [
     "langgraph>=0.2.39",
     "ollama>=0.3.3",
     "python-dotenv>=1.0.1",
+    "ruff>=0.7.1",
     "unstructured[all-docs]>=0.16.0",
 ]
+
+
+[project.scripts]
+vectrix-graphs = "vectrix_graphs.main:app"
 
 [build-system]
 requires = ["hatchling"]
