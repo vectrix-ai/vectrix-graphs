@@ -1,5 +1,8 @@
+import json
 from langsmith import Client
-
+import time
+from ...logger import setup_logger
+import uuid
 
 class StreamProcessor:
     """
@@ -16,10 +19,11 @@ class StreamProcessor:
         process_stream(graph, question): Asynchronously processes the stream of events
         from the given graph for the provided question.
     """
-    def __init__(self, graph, logger):
+    def __init__(self, graph):
         self.client = Client()
-        self.logger = logger
+        self.logger = setup_logger('stream_processor')
         self.graph = graph
+        self.session_id = str(uuid.uuid4())
 
     async def process_stream(self, messages):
         """
@@ -30,7 +34,7 @@ class StreamProcessor:
 
         Args:
             graph: The langgraph object to process events from.
-            question (str): The question to be processed by the graph.
+            messages (list): The messages to be processed by the graph.
 
         Yields:
             dict: A dictionary containing one of the following keys:
@@ -46,34 +50,60 @@ class StreamProcessor:
         config = {"configurable": {
         }}
 
+        # Generate a unique ID for this chat completion
+        chat_id = f"chatcmpl-{self.session_id}"
+
+        # Yield the initial chunk
+        yield json.dumps({
+            "id": chat_id,
+            "object": "chat.completion.chunk",
+            "created": int(time.time()),
+            "model": "demo",
+            "system_fingerprint": f"fp_{self.session_id[:8]}",
+            "choices": [{
+                "index": 0,
+                "delta": {"role": "assistant", "content": ""},
+                "logprobs": None,
+                "finish_reason": None
+            }]
+        })
+
         
         async for event in self.graph.astream_events({"messages": messages}, version="v1", config=config):
             kind = event["event"]
 
-            #print(event)
-
             if kind == "on_chat_model_stream":
-                if event["metadata"]["langgraph_node"] in ["llm_answer", "final_answer", 'rag_answer', "rewrite_last_message"]:
-                    #chunk_content = event["data"]["chunk"].content
-                    #print(chunk_content, end='', flush=True)  # Print on the same line and flush the output
-
-                    # OpenAI API format
-                    '''
-                    yield {
-                        "id": event["run_id"],
+                if event["metadata"]["langgraph_node"] in ["llm_answer", "rag_answer"]:
+                    chunk_content = event["data"]["chunk"].content
+                    
+                    yield json.dumps({
+                        "id": chat_id,
                         "object": "chat.completion.chunk",
                         "created": int(time.time()),
-                        "model": event["metadata"]["ls_model_name"],
-                        "system_fingerprint": "fp_" + event["run_id"][:8],
-                        "choices": [{
+                        "model": "demo",
+                        "system_fingerprint": f"fp_{self.session_id[:8]}",
+                        "choices": [
+                            {
                             "index": 0,
-                            "delta": {"content": chunk_content},
+                            "delta": {
+                                "content": chunk_content
+                                },
                             "logprobs": None,
                             "finish_reason": None
-                        }]
-                    }
-                    '''
-            if kind == "on_chain_stream":
-                if event['name'] == 'final_answer':
-                    yield(event['data']['chunk']['messages'].content)
-                    pass
+                            }]
+                        })
+
+        # Add a final chunk to indicate completion
+        yield json.dumps({
+            "id": chat_id,
+            "object": "chat.completion.chunk",
+            "created": int(time.time()),
+            "model": "demo",
+            "system_fingerprint": f"fp_{self.session_id[:8]}",
+            "choices": [{
+                "index": 0,
+                "delta": {},
+                "logprobs": None,
+                "finish_reason": "stop"
+            }]
+        })

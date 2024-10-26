@@ -1,14 +1,14 @@
 from fastapi import FastAPI
+from .routers import chat, models
 
 app = FastAPI()
+
+app.include_router(chat.router, prefix="/v1")
+app.include_router(models.router, prefix="/v1")
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to Vectrix Graphs API"}
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello, {name}!"}
 
 if __name__ == "__main__":
     import uvicorn

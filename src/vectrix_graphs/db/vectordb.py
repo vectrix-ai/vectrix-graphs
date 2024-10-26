@@ -9,10 +9,10 @@ class VectorDB():
     def __init__(self, logger, embeddings_model = None):
         self.logger = logger
         try:
-            self.client = chromadb.HttpClient(host='localhost', port=8000)
+            self.client = chromadb.HttpClient(host='localhost', port=7777)
         except Exception:
             self.logger.warning("Connecting to ChromaDB on localhost failed, using Docker networking instead")
-            self.client = chromadb.HttpClient(host='host.docker.internal', port=8000)
+            self.client = chromadb.HttpClient(host='host.docker.internal', port=7777)
         try: 
             self.collection = self.client.create_collection(
                 name="demo",

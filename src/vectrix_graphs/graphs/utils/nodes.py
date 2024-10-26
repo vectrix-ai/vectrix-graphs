@@ -47,7 +47,7 @@ class GraphNodes:
             return prompt_template | llm
         else:
             prompt_template = hub.pull("vectrix/answer_question_local")
-            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0, max_tokens=6000)
             return prompt_template | llm | XMLOutputParser(tags=["answer"])
         
     
@@ -90,7 +90,34 @@ class GraphNodes:
                 seen_uuids.add(uuid)
                 unique_documents.append(doc)
         return unique_documents
+    
+    @staticmethod
+    def _rewrite_chat_history(mode, messages):
+        prompt = hub.pull("question_context_reformulation")
 
+        if mode == 'online':
+            llm = ChatOpenAI(model="gpt-4o", temperature=0, max_tokens=6000)
+        else:
+            llm = ChatOpenAI(model="gpt-4o", temperature=0, max_tokens=6000)
+        
+        return prompt | llm
+
+    async def detect_message_history(self, state: OverallState, config):
+        if len(state["messages"]) > 1:
+            return "True"
+        else:
+            return "False"
+
+    async def rewrite_chat_history(self, state: OverallState, config):
+        rewritten_question = self._rewrite_chat_history(self.mode, state["messages"])
+
+        question = state["messages"][-1].content
+        chat_history = ""
+        for message in state["messages"][:-1]:
+            chat_history += f"{message.type}: {message.content}\n"
+        result = await rewritten_question.ainvoke({"USER_QUESTION": question, "CHAT_HISTORY": chat_history})
+        return {"messages": result["reformulated_question"]}
+    
 
     async def detect_intent(self, state :OverallState, config):
         self.logger.info("Detecting intent")
@@ -112,8 +139,6 @@ class GraphNodes:
             return "specific_question"
         elif state["intent"] == "metadata_query":
             return "metadata_query"
-        elif state["intent"] == "follow_up_question":
-            return "follow_up_question"
         else:
             return "end"
         
@@ -232,7 +257,6 @@ class GraphNodes:
 
     async def cite_sources(self, state: OverallState, config):
         question = state["messages"][-1].content
-
         sources = ""
 
         if len(state["documents"]) == 0:
@@ -252,12 +276,7 @@ class GraphNodes:
     
     async def metadata_query(self, state: OverallState, config):
         self.logger.info("Answering metadata query")
-        return {}
-    
-    async def default_flow_end(self, state: OverallState, config):
-        self.logger.info("Default flow end")
-        return {}
-    
+        return {"messages": [AIMessage(content="A metatadata query is currently not supported in this demo. Please contact Ben Selleslagh (ben@vectrix.ai) for more information.")]}
 
 
 
