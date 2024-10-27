@@ -66,7 +66,7 @@ async def chat_completion(request: ChatCompletionRequest):
             return _transform_response(request.model, response)
         
         elif request.model == "navid_ai_demo_online":
-            response = await default_flow.ainvoke(request.model_dump())
+            response = await default_flow.ainvoke({"messages": messages})
             return _transform_response(request.model, response)
         
         else:

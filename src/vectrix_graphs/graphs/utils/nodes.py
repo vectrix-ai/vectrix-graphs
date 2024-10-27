@@ -139,6 +139,8 @@ class GraphNodes:
             return "specific_question"
         elif state["intent"] == "metadata_query":
             return "metadata_query"
+        elif state["intent"] == "follow_up_question":
+            return "follow_up_question"
         else:
             return "end"
         

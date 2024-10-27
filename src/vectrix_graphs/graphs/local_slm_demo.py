@@ -57,6 +57,7 @@ workflow.add_conditional_edges(
         "greeting": "llm_answer",
         "specific_question": "question_subgraph",
         "metadata_query": "metadata_query",
+        "follow_up_question": "llm_answer",
     }
 )
 workflow.add_edge("llm_answer", END)
