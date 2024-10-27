@@ -1,18 +1,31 @@
 import chromadb
+from chromadb.config import Settings
 import ollama
 from ollama import Client
 from langchain_core.documents import Document
 from typing import List
 import uuid
+import os
 
 class VectorDB():
     def __init__(self, logger, embeddings_model = None):
         self.logger = logger
         try:
-            self.client = chromadb.HttpClient(host='localhost', port=7777)
+            # Try localhost first
+            self.client = chromadb.HttpClient(
+                host='localhost',
+                port=7777
+                )
         except Exception:
-            self.logger.warning("Connecting to ChromaDB on localhost failed, using Docker networking instead")
-            self.client = chromadb.HttpClient(host='host.docker.internal', port=7777)
+            self.logger.warning("Connecting to ChromaDB on localhost failed, using hosted service instead")
+            self.client = chromadb.HttpClient(
+                host=os.environ["CHROMA_URL"], 
+                port=8000, 
+                settings=Settings(
+                    chroma_client_auth_provider="chromadb.auth.token_authn.TokenAuthClientProvider",
+                    chroma_client_auth_credentials=os.environ["CHROMA_SERVER_AUTHN_CREDENTIALS"]
+                )
+            )
         try: 
             self.collection = self.client.create_collection(
                 name="demo",
