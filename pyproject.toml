@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.11"
 dependencies = [
     "chromadb>=0.5.15",
+    "cohere>=5.11.1",
     "colorlog>=6.8.2",
     "fastapi[standard]>=0.115.3",
     "ipykernel>=6.29.5",

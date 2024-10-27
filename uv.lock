@@ -523,6 +523,27 @@ wheels = [
 ]
 
 [[package]]
+name = "cohere"
+version = "5.11.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fastavro" },
+    { name = "httpx" },
+    { name = "httpx-sse" },
+    { name = "parameterized" },
+    { name = "pydantic" },
+    { name = "pydantic-core" },
+    { name = "requests" },
+    { name = "tokenizers" },
+    { name = "types-requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c7/c1/eb774c5d7f74f62db5f41cd36b3f723b32d1ae11e09932e48a0b45a9e1ac/cohere-5.11.1.tar.gz", hash = "sha256:821e20593def7796d314be9bcba87e9ecf69dc6ef17172f842447275f8679d0f", size = 129383 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b9/a4/48fe3fc5a07a17b0534d5ed4c1f76364e7a9d49487e72636e6f34f2ea8f7/cohere-5.11.1-py3-none-any.whl", hash = "sha256:117c718bfbc7637cf22c1025e8e2bf820ebeef51f7fbb2b9d74f3e9c0a9c6c25", size = 249700 },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -850,6 +871,26 @@ wheels = [
 [package.optional-dependencies]
 standard = [
     { name = "uvicorn", extra = ["standard"] },
+]
+
+[[package]]
+name = "fastavro"
+version = "1.9.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/56/72dc3fa6985c7f27b392cd3991c466eb61208f3c6cb7fc2f12e6bfc6f774/fastavro-1.9.7.tar.gz", hash = "sha256:13e11c6cb28626da85290933027cd419ce3f9ab8e45410ef24ce6b89d20a1f6c", size = 987818 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/89/61/b8b18aebc01e5d5a77042f6d555fe091d3279242edd5639252c9fcb9a3b7/fastavro-1.9.7-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:ec8499dc276c2d2ef0a68c0f1ad11782b2b956a921790a36bf4c18df2b8d4020", size = 1040249 },
+    { url = "https://files.pythonhosted.org/packages/a0/a1/c6539ac9f6e068c1920f5d6a823113cd60088160050ed32ee4e7b960c1aa/fastavro-1.9.7-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:76d9d96f98052615ab465c63ba8b76ed59baf2e3341b7b169058db104cbe2aa0", size = 3312219 },
+    { url = "https://files.pythonhosted.org/packages/68/2b/0015355fb7dbf31dee0f3e69e6fa1ff43967500a8b1abb81de5a15f24b16/fastavro-1.9.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:919f3549e07a8a8645a2146f23905955c35264ac809f6c2ac18142bc5b9b6022", size = 3334160 },
+    { url = "https://files.pythonhosted.org/packages/60/08/62707fe5bfb7c4dca99132c969b38270579bf96408552a0baf201e861e84/fastavro-1.9.7-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:9de1fa832a4d9016724cd6facab8034dc90d820b71a5d57c7e9830ffe90f31e4", size = 3282829 },
+    { url = "https://files.pythonhosted.org/packages/b2/7e/21b3066973c60309f8e58f3d0d63dfdad196354217416384577c1e8faee0/fastavro-1.9.7-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:1d09227d1f48f13281bd5ceac958650805aef9a4ef4f95810128c1f9be1df736", size = 3419466 },
+    { url = "https://files.pythonhosted.org/packages/43/b3/cac5151810a8c8b5ef318b488a61288fe07e623e9b342c3fc2f60cbfdede/fastavro-1.9.7-cp311-cp311-win_amd64.whl", hash = "sha256:2db993ae6cdc63e25eadf9f93c9e8036f9b097a3e61d19dca42536dcc5c4d8b3", size = 500131 },
+    { url = "https://files.pythonhosted.org/packages/bb/30/e6f13d07ca6b2ba42719192a36233d660d75bbdc91026a20da0e08f8d5f3/fastavro-1.9.7-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:4e1289b731214a7315884c74b2ec058b6e84380ce9b18b8af5d387e64b18fc44", size = 1035760 },
+    { url = "https://files.pythonhosted.org/packages/e0/29/dd2f5b2213be103a6b22cbf62e1e17a8423aa687c05f37510688d7ed5987/fastavro-1.9.7-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:eac69666270a76a3a1d0444f39752061195e79e146271a568777048ffbd91a27", size = 3263393 },
+    { url = "https://files.pythonhosted.org/packages/69/4c/011823812409d16c6785754c5332e3f551b8131ea14cf9dd14155a61baaf/fastavro-1.9.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9be089be8c00f68e343bbc64ca6d9a13e5e5b0ba8aa52bcb231a762484fb270e", size = 3328621 },
+    { url = "https://files.pythonhosted.org/packages/85/1a/d388306a809ad3b4820f1bd67b2fdd9dd9d0af8782dea6524bdb7fd249ef/fastavro-1.9.7-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:d576eccfd60a18ffa028259500df67d338b93562c6700e10ef68bbd88e499731", size = 3256407 },
+    { url = "https://files.pythonhosted.org/packages/68/dc/66cc5227809074beb61cf19bfd615b5b1c0bce0d833af69a2d02b4408316/fastavro-1.9.7-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:ee9bf23c157bd7dcc91ea2c700fa3bd924d9ec198bb428ff0b47fa37fe160659", size = 3418234 },
+    { url = "https://files.pythonhosted.org/packages/c8/0c/92b468e4649e61eaa2d93a92e19a5b57a0f6cecaa236c53a76f3f72a4696/fastavro-1.9.7-cp312-cp312-win_amd64.whl", hash = "sha256:b6b2ccdc78f6afc18c52e403ee68c00478da12142815c1bd8a00973138a166d0", size = 487778 },
 ]
 
 [[package]]
@@ -3006,6 +3047,15 @@ wheels = [
 ]
 
 [[package]]
+name = "parameterized"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ea/49/00c0c0cc24ff4266025a53e41336b79adaa5a4ebfad214f433d623f9865e/parameterized-0.9.0.tar.gz", hash = "sha256:7fc905272cefa4f364c1a3429cbbe9c0f98b793988efb5bf90aac80f08db09b1", size = 24351 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/2f/804f58f0b856ab3bf21617cccf5b39206e6c4c94c2cd227bde125ea6105f/parameterized-0.9.0-py2.py3-none-any.whl", hash = "sha256:4e0758e3d41bea3bbd05ec14fc2c24736723f243b28d702081aef438c9372b1b", size = 20475 },
+]
+
+[[package]]
 name = "parso"
 version = "0.8.4"
 source = { registry = "https://pypi.org/simple" }
@@ -4525,6 +4575,18 @@ wheels = [
 ]
 
 [[package]]
+name = "types-requests"
+version = "2.32.0.20241016"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fa/3c/4f2a430c01a22abd49a583b6b944173e39e7d01b688190a5618bd59a2e22/types-requests-2.32.0.20241016.tar.gz", hash = "sha256:0d9cad2f27515d0e3e3da7134a1b6f28fb97129d86b867f24d9c726452634d95", size = 18065 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d7/01/485b3026ff90e5190b5e24f1711522e06c79f4a56c8f4b95848ac072e20f/types_requests-2.32.0.20241016-py3-none-any.whl", hash = "sha256:4195d62d6d3e043a4eaaf08ff8a62184584d2e8684e9d2aa178c7915a7da3747", size = 15836 },
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 source = { registry = "https://pypi.org/simple" }
@@ -4745,6 +4807,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "chromadb" },
+    { name = "cohere" },
     { name = "colorlog" },
     { name = "fastapi", extra = ["standard"] },
     { name = "ipykernel" },
@@ -4765,6 +4828,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "chromadb", specifier = ">=0.5.15" },
+    { name = "cohere", specifier = ">=5.11.1" },
     { name = "colorlog", specifier = ">=6.8.2" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.3" },
     { name = "ipykernel", specifier = ">=6.29.5" },

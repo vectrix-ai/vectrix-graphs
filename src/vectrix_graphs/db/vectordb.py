@@ -1,7 +1,6 @@
 import chromadb
 from chromadb.config import Settings
-import ollama
-from ollama import Client
+import cohere
 from langchain_core.documents import Document
 from typing import List
 import uuid
@@ -10,6 +9,7 @@ import os
 class VectorDB():
     def __init__(self, logger, embeddings_model = None):
         self.logger = logger
+        self.co = cohere.ClientV2()
         try:
             # Try localhost first
             self.client = chromadb.HttpClient(
@@ -45,12 +45,15 @@ class VectorDB():
         This function adds documents to the vector database.
         '''
         embeddings = []
-        for doc in documents:
-            response = ollama.embeddings(
-                model="bge-m3",
-                prompt=doc.page_content
-            )
-            embeddings.append(response['embedding'])
+
+        response = self.co.embed(
+            texts=[doc.page_content for doc in documents], 
+            model="embed-english-v3.0", 
+            input_type="search_document", 
+            embedding_types=["float"]
+        )
+
+        embeddings = response.embeddings.float_
 
         self.collection.add(
             documents=[doc.page_content for doc in documents],
@@ -65,22 +68,17 @@ class VectorDB():
         '''
         This function queries the vector database and returns Langchain Documents with cosine distances.
         '''
-        try:
-            embeddings = ollama.embeddings(
-                model="bge-m3",
-                prompt=query
-            )
-        except Exception:
-            self.logger.warning("Connecting to Ollama on localhost failed, using Docker networking instead")
-            client = Client(host="host.docker.internal")
-            embeddings = client.embeddings(
-                model="bge-m3",
-                prompt=query
-            )
+        response = self.co.embed(
+            texts=[query], 
+            model="embed-english-v3.0", 
+            input_type="search_query", 
+            embedding_types=["float"]
+        )
+        embeddings = response.embeddings.float_
 
 
         results = self.collection.query(
-            query_embeddings=[embeddings['embedding']],
+            query_embeddings=embeddings,
             n_results=k,
             include=['documents', 'metadatas', 'distances']
         )
