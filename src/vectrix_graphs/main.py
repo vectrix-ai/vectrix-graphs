@@ -12,7 +12,11 @@ except Exception:
     pass
 
 
-app = FastAPI()
+app = FastAPI(
+    title="vectrix-graphs",
+    description="OpenAI-compatible API for graph operations. This API implements OpenAI's API interface for drop-in compatibility.",
+    version="1.0.0"
+)
 security = HTTPBearer()
 
 # Add this function to verify the token
