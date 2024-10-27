@@ -48,7 +48,7 @@ class GraphNodes:
         else:
             prompt_template = hub.pull("vectrix/answer_question_local")
             llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0, max_tokens=6000)
-            return prompt_template | llm | XMLOutputParser(tags=["answer"])
+            return prompt_template | llm | StrOutputParser()
         
     
     @staticmethod
@@ -219,7 +219,7 @@ class GraphNodes:
             # Extract the content from the 'answer_markdown' key
             answer_content = response['answer']
         else:
-            answer_content = response['answer']
+            answer_content = response
 
         # Create the AIMessage with the extracted content
         ai_message = AIMessage(content=answer_content)
