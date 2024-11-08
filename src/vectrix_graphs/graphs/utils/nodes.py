@@ -48,13 +48,7 @@ class GraphNodes:
             return prompt_template | llm
         else:
             prompt_template = hub.pull("vectrix/answer_question_local")
-            #llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0, max_tokens=6000)
-            llm = ChatOpenAI(
-                base_url="http://35.223.97.19:9764/v1",
-                model="Mulhem-Adapted-Llama",
-                temperature=0.1,
-                api_key=os.getenv("MULHEM_API_KEY"),
-            )
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0, max_tokens=6000)
             return prompt_template | llm | StrOutputParser()
         
     
@@ -165,13 +159,7 @@ class GraphNodes:
         if self.mode == 'online':
             llm = ChatOpenAI(temperature=0, model="gpt-4o")
         else:
-            #llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
-            llm = ChatOpenAI(
-                base_url="http://35.223.97.19:9764/v1",
-                model="Mulhem-Adapted-Llama",
-                temperature=0.1,
-                api_key=os.getenv("MULHEM_API_KEY"),
-            )
+            llm = ChatTogether(model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0)
         response = await llm.ainvoke(messages)
         response = AIMessage(content=response.content)
         return {"messages": response}

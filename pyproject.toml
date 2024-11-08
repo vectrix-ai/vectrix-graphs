@@ -25,6 +25,7 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "ruff>=0.7.1",
     "unstructured[all-docs]>=0.16.0",
+    "weaviate-client>=4.9.3",
 ]
 
 
