@@ -52,7 +52,12 @@ class VectorDB():
             import weaviate
             from weaviate.classes.config import Configure
             if os.environ["ENV"] == "local":
-                self.client = weaviate.connect_to_local()
+                try:
+                    self.client = weaviate.connect_to_local()
+                except Exception:
+                    self.client = weaviate.connect_to_local(
+                        host="host.docker.internal",
+                    )
                 try:
                     self.client.collections.create(
                         "demo",
