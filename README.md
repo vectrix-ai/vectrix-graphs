@@ -51,6 +51,29 @@ OPENAI_API_KEY=your_key_here
 ANTHROPIC_API_KEY=your_key_here
 ```
 
+## Configuration
+
+### Vector Database Selection
+
+You can configure your preferred vector database in your environment:
+
+```env
+VECTOR_DB=weaviate  # or "chroma" for ChromaDB
+WEAVIATE_URL=http://localhost:8080  # for Weaviate
+CHROMA_URL=http://localhost:7777    # for ChromaDB
+```
+
+### Database Comparison
+
+| Feature | ChromaDB | Weaviate |
+|---------|----------|-----------|
+| Setup Complexity | Simple | Moderate |
+| Scaling | Limited | Excellent |
+| Real-time Updates | Basic | Advanced |
+| Production Ready | Development | Production |
+| Memory Usage | Lower | Higher |
+| Query Performance | Good | Excellent |
+
 ## Usage
 
 ### Running the API
