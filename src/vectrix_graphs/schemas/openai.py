@@ -1,9 +1,12 @@
-from pydantic import BaseModel, Field
 from typing import List, Optional, Union
+
+from pydantic import BaseModel, Field
+
 
 class Message(BaseModel):
     role: str
     content: Union[str, List[Union[str, dict]]]
+
 
 class ChatCompletionRequest(BaseModel):
     model: str
@@ -19,15 +22,18 @@ class ChatCompletionRequest(BaseModel):
     logit_bias: Optional[dict] = None
     user: Optional[str] = None
 
+
 class Choice(BaseModel):
     index: int
     message: Message
     finish_reason: str
 
+
 class Usage(BaseModel):
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
+
 
 class ChatCompletionResponse(BaseModel):
     id: str

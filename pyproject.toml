@@ -12,22 +12,17 @@ dependencies = [
     "cohere>=5.11.1",
     "colorlog>=6.8.2",
     "fastapi[standard]>=0.115.3",
-    "ipykernel>=6.29.5",
-    "ipywidgets>=8.1.5",
-    "jupyter>=1.1.1",
     "langchain-anthropic>=0.2.3",
     "langchain-ollama>=0.2.0",
     "langchain-openai>=0.2.3",
     "langchain-together>=0.2.0",
     "langchain>=0.3.4",
     "langgraph>=0.2.39",
-    "ollama>=0.3.3",
-    "python-dotenv>=1.0.1",
-    "ruff>=0.7.1",
+    "o365>=2.0.37",
+    "unstructured-ingest[embed-voyageai,slack]>=0.2.2",
     "unstructured[all-docs]>=0.16.0",
     "weaviate-client>=4.9.3",
 ]
-
 
 [project.scripts]
 vectrix-graphs = "vectrix_graphs.main:app"
@@ -35,3 +30,25 @@ vectrix-graphs = "vectrix_graphs.main:app"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "ipykernel>=6.29.5",
+    "ollama>=0.3.3",
+    "pre-commit>=4.0.1",
+    "pytest>=8.3.3",
+    "python-dotenv>=1.0.1",
+    "ruff>=0.7.1",
+]
+
+[tool.ruff]
+lint.extend-select = [
+    "I",
+    "W",
+]
+exclude = ["examples"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src"
+]

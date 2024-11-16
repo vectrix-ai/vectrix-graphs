@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from .routers import chat, models
 import os
+
 from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+from .routers import chat, models
 
 # Try to load .env file if it exists (development)
 # If it doesn't exist (production), it will silently continue using OS environment variables
@@ -15,9 +17,10 @@ except Exception:
 app = FastAPI(
     title="vectrix-graphs",
     description="OpenAI-compatible API for graph operations. This API implements OpenAI's API interface for drop-in compatibility.",
-    version="1.0.0"
+    version="1.0.0",
 )
 security = HTTPBearer()
+
 
 # Add this function to verify the token
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -30,23 +33,19 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
         )
     return credentials.credentials
 
+
 # Update router includes to use authentication
-app.include_router(
-    chat.router,
-    prefix="/v1",
-    dependencies=[Depends(verify_token)]
-)
-app.include_router(
-    models.router,
-    prefix="/v1",
-    dependencies=[Depends(verify_token)]
-)
+app.include_router(chat.router, prefix="/v1", dependencies=[Depends(verify_token)])
+app.include_router(models.router, prefix="/v1", dependencies=[Depends(verify_token)])
+
 
 # Root endpoint can remain public or be protected
 @app.get("/")
 async def root():
     return {"message": "Welcome to Vectrix Graphs API"}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8080)
