@@ -8,7 +8,6 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "chromadb>=0.5.15",
     "cohere>=5.11.1",
     "colorlog>=6.8.2",
     "fastapi[standard]>=0.115.3",
@@ -19,8 +18,9 @@ dependencies = [
     "langchain>=0.3.4",
     "langgraph>=0.2.39",
     "o365>=2.0.37",
-    "unstructured-ingest[embed-voyageai,slack]>=0.2.2",
+    "slack-sdk>=3.33.3",
     "unstructured[all-docs]>=0.16.0",
+    "voyageai>=0.3.1",
     "weaviate-client>=4.9.3",
 ]
 
@@ -33,7 +33,9 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 dev-dependencies = [
+    "chromadb>=0.5.18",
     "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.5",
     "ollama>=0.3.3",
     "pre-commit>=4.0.1",
     "pytest>=8.3.3",
