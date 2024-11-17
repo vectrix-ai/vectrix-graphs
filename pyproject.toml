@@ -19,6 +19,7 @@ dependencies = [
     "langgraph>=0.2.39",
     "o365>=2.0.37",
     "pdfplumber>=0.5.3",
+    "pycrypto>=2.6.1",
     "slack-sdk>=3.33.3",
     "unstructured[all-docs]>=0.16.0",
     "voyageai>=0.3.1",
