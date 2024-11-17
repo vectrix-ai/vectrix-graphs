@@ -11,7 +11,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Set up Python
-        run: uv python install
+        run: uv python install --system-packages
           
       - name: Install the project
         run: uv sync
