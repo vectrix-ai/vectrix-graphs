@@ -2,11 +2,12 @@ from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from vectrix_graphs.graphs.utils.nodes import GraphNodes
-from vectrix_graphs.graphs.utils.state import OverallState
 from vectrix_graphs.logger import setup_logger
 
-logger = setup_logger(name="LangGraph Flow")
+from .utils.nodes import GraphNodes
+from .utils.state import OverallState
+
+logger = setup_logger(__name__, "INFO")
 
 
 # Define the config

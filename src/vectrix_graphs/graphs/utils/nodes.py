@@ -1,15 +1,15 @@
-from typing import List
-
-from langchain import hub
-from langchain_anthropic import ChatAnthropic
-from langchain_core.documents import Document
 from langchain_core.messages import AIMessage
-from langchain_core.output_parsers import PydanticToolsParser, StrOutputParser
 from langchain_openai import ChatOpenAI
 from langchain_together import ChatTogether
 from langgraph.constants import Send
 
-from .state import CitedSources, Intent, OverallState, QuestionList, QuestionState
+from vectrix_graphs.db.weaviate import Weaviate
+
+from .handlers.document_handler import DocumentHandler
+from .models.chain_factory import ChainFactory
+from .models.llm_factory import LLMFactory
+from .models.tools import CitedSources, Intent, QuestionList
+from .state import OverallState, QuestionState
 
 
 class GraphNodes:
@@ -20,103 +20,50 @@ class GraphNodes:
         self.logger.info("GraphNodes initialized")
         # self.vectordb = vector_db
         self.mode = mode
+        self.llm_factory = LLMFactory()
+        self.chain_factory = ChainFactory()
+        self.document_handler = DocumentHandler()
+        self.weaviate = Weaviate()
 
-    @staticmethod
-    def _setup_intent_detection(mode):
-        prompt = hub.pull("vectrix/intent_detection")
-        if mode == "online":
-            llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
-        else:
-            llm = ChatTogether(
-                model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", temperature=0
-            )
-        llm_with_tools = llm.bind_tools(tools=[Intent])
-        return prompt | llm_with_tools
+    def _setup_intent_detection(self, mode):
+        llm = self.llm_factory.create_llm(mode, "default", temperature=0)
+        return self.chain_factory.create_langsmith_chain(
+            llm, "vectrix/intent_detection", tools=[Intent]
+        )
 
-    @staticmethod
-    def _setup_question_detection(mode):
-        prompt = hub.pull("vectrix/split_questions")
-        if mode == "online":
-            llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
-        else:
-            llm = ChatTogether(
-                model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0
-            )
-        llm_with_tools = llm.bind_tools(tools=[QuestionList])
-        return prompt | llm_with_tools
+    def _setup_question_detection(self, mode):
+        llm = self.llm_factory.create_llm(mode, "default", temperature=0)
+        return self.chain_factory.create_langsmith_chain(
+            llm, "vectrix/split_questions", tools=[QuestionList]
+        )
 
-    @staticmethod
-    def _rag_answer_chain(mode):
-        if mode == "online":
-            prompt_template = hub.pull("answer_question")
-            llm = ChatAnthropic(
-                model_name="claude-3-5-sonnet-20241022", temperature=0, max_tokens=6000
-            )
-            return prompt_template | llm
-        else:
-            prompt_template = hub.pull("vectrix/answer_question_local")
-            llm = ChatTogether(
-                model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-                temperature=0,
-                max_tokens=6000,
-            )
-            return prompt_template | llm | StrOutputParser()
+    def _rag_answer_chain(self, mode):
+        llm = self.llm_factory.create_llm(mode, "claude", temperature=0)
+        return self.chain_factory.create_langsmith_chain(llm, "vectrix/answer_question")
 
-    @staticmethod
-    def _setup_cite_sources_chain(mode):
-        if mode == "online":
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-        else:
-            llm = ChatTogether(
-                model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0
-            )
-        llm_with_tools = llm.bind_tools([CitedSources])
-        prompt = hub.pull("cite_sources")
-        return prompt | llm_with_tools | PydanticToolsParser(tools=[CitedSources])
+    def _setup_cite_sources_chain(self, mode):
+        llm = self.llm_factory.create_llm(mode, "mini", temperature=0)
+        return self.chain_factory.create_langsmith_chain(
+            llm, "vectrix/cite_sources", tools=[CitedSources]
+        )
 
-    @staticmethod
-    def _question_rewriter_chain(mode):
-        if mode == "online":
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-        else:
-            llm = ChatTogether(
-                model="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo", temperature=0
-            )
-        prompt = hub.pull("vectrix/question_rewriter")
-        return prompt | llm | StrOutputParser()
+    def _question_rewriter_chain(self, mode):
+        llm = self.llm_factory.create_llm(mode, "mini", temperature=0)
+        return self.chain_factory.create_langsmith_chain(
+            llm, "vectrix/question_rewriter"
+        )
 
-    @staticmethod
-    def _setup_hallucination_grader(mode):
-        if mode == "online":
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-        else:
-            llm = ChatTogether(
-                model="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", temperature=0
-            )
-        prompt = hub.pull("vectrix/hallucination_prompt")
-        return prompt | llm
+    def _setup_hallucination_grader(self, mode):
+        llm = self.llm_factory.create_llm(mode, "mini", temperature=0)
+        return self.chain_factory.create_langsmith_chain(
+            llm, "vectrix/hallucination_prompt"
+        )
 
-    @staticmethod
-    def _filter_duplicate_docs(documents: List[Document]) -> List[Document]:
-        seen_uuids = set()
-        unique_documents = []
-        for doc in documents:
-            uuid = doc.metadata.get("uuid")
-            if uuid not in seen_uuids:
-                seen_uuids.add(uuid)
-                unique_documents.append(doc)
-        return unique_documents
-
-    @staticmethod
-    def _rewrite_chat_history(mode, messages):
-        prompt = hub.pull("question_context_reformulation")
-
-        if mode == "online":
-            llm = ChatOpenAI(model="gpt-4o", temperature=0, max_tokens=6000)
-        else:
-            llm = ChatOpenAI(model="gpt-4o", temperature=0, max_tokens=6000)
-
-        return prompt | llm
+    def _rewrite_chat_history(self, mode):
+        llm = self.llm_factory.create_llm(mode, "default", temperature=0)
+        return self.chain_factory.create_langsmith_chain(
+            llm, "vectrix/question_context_reformulation"
+        )
 
     async def detect_message_history(self, state: OverallState, config):
         if len(state["messages"]) > 1:
@@ -216,10 +163,10 @@ class GraphNodes:
 
     async def filter_docs(self, state: OverallState, config):
         documents = state["documents"]
-        if len(documents) == 0:
+        if not documents:
             return {"documents": []}
 
-        filtered_docs = self._filter_duplicate_docs(documents)
+        filtered_docs = await self.document_handler.filter_duplicates(documents)
 
         state["documents"].clear()
         return {"documents": filtered_docs}

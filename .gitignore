@@ -35,3 +35,8 @@ vector_db/
 # Ruff cache
 .ruff_cache/
 
+# tmp
+tmp/
+
+#
+.langgraph_api

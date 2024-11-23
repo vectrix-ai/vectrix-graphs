@@ -1,8 +1,7 @@
 {
   "dockerfile_lines": [],
   "graphs": {
-    "default_flow": "./src/vectrix_graphs/graphs/default_flow.py:default_flow",
-    "local_slm_demo": "./src/vectrix_graphs/graphs/local_slm_demo.py:local_slm_demo"
+    "multi_modal_rag": "./src/vectrix_graphs/graphs/multi_modal_rag.py:multi_modal_graph"
   },
   "env": ".env",
   "python_version": "3.11",

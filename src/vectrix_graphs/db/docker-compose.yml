@@ -13,7 +13,7 @@ services:
     - 8080:8080
     - 50051:50051
     volumes:
-    - /var/weaviate:/var/lib/weaviate
+    - /Users/bselleslagh/Documents/GitHub/vectrix-graphs/tmp/weaviate_data:/var/lib/weaviate
     restart: on-failure:0
     environment:
       COHERE_APIKEY: $COHERE_APIKEY

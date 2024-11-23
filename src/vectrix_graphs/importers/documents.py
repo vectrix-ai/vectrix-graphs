@@ -9,7 +9,7 @@ from unstructured.staging.base import elements_from_base64_gzipped_json
 
 from ..logger import setup_logger
 
-logger = setup_logger(__name__)
+logger = setup_logger(__name__, "INFO")
 
 # Constants
 MAX_IMAGE_DIMENSION = 1000
@@ -62,6 +62,8 @@ def multi_modal_extraction(
         embedding_objects = []
         embedding_metadatas = []
 
+        logger.info(f"Extracted {len(chunks)} chunks")
+
         for chunk in chunks:
             chunk_dict = chunk.to_dict()
             metadata = chunk_dict["metadata"]
@@ -88,8 +90,7 @@ def multi_modal_extraction(
                         image_data.append(base64_image)
                         pil_image = _process_image(base64_image)
                         embedding_object.append(pil_image)
-
-                metedata_dict["image_data"] = image_data
+                        metedata_dict["image_data"] = image_data
 
             embedding_objects.append(embedding_object)
             embedding_metadatas.append(metedata_dict)
